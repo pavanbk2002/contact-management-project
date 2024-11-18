@@ -1,0 +1,4 @@
+mkdir contact-api
+cd contact-api
+npm init -y
+npm install express mysql2 cors body-parser
