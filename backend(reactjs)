@@ -1,0 +1,55 @@
+// contact-api/server.js
+const express = require('express');
+const mysql = require('mysql2');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+
+const app = express();
+const port = 5000;
+
+app.use(cors());
+app.use(bodyParser.json());
+
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root', // replace with your MySQL username
+  password: '', // replace with your MySQL password
+  database: 'contact_management'
+});
+
+// POST /contacts
+app.post('/contacts', (req, res) => {
+  const { firstName, lastName, email, phoneNumber, company, jobTitle } = req.body;
+  const sql = 'INSERT INTO contacts (firstName, lastName, email, phoneNumber, company, jobTitle) VALUES (?, ?, ?, ?, ?, ?)';
+  db.query(sql, [firstName, lastName, email, phoneNumber, company, jobTitle], (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error adding contact', error: err });
+    }
+    res.status(201).json({ id: result.insertId, firstName, lastName, email, phoneNumber, company, jobTitle });
+  });
+});
+
+// GET /contacts
+app.get('/contacts', (req, res) => {
+  db.query('SELECT * FROM contacts', (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error fetching contacts', error: err });
+    }
+    res.status(200).json(result);
+  });
+});
+
+// DELETE /contacts/:id
+app.delete('/contacts/:id', (req, res) => {
+  const { id } = req.params;
+  db.query('DELETE FROM contacts WHERE id = ?', [id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: 'Error deleting contact', error: err });
+    }
+    res.status(200).json({ message: 'Contact deleted successfully' });
+  });
+});
+
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+});
